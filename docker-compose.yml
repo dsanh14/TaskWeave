@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - ALLOWED_ORIGINS=http://localhost:5173
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - FETCH_API_KEY=${FETCH_API_KEY:-}
+      - FETCH_AGENTVERSE_URL=${FETCH_AGENTVERSE_URL:-https://api.fetch.ai/agentverse}
+      - FETCH_ASI_ONE_URL=${FETCH_ASI_ONE_URL:-https://api.fetch.ai/asi-one}
+      - LETTA_API_KEY=${LETTA_API_KEY:-}
+      - LETTA_BASE_URL=${LETTA_BASE_URL:-https://api.letta.ai}
+      - COMPOSIO_API_KEY=${COMPOSIO_API_KEY:-}
+      - COMPOSIO_BASE_URL=${COMPOSIO_BASE_URL:-https://api.composio.dev}
+      - ELASTIC_URL=${ELASTIC_URL:-}
+      - ELASTIC_INDEX=${ELASTIC_INDEX:-taskweave-logs}
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+networks:
+  default:
+    name: taskweave-network
+
